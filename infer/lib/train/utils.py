@@ -219,13 +219,11 @@ def plot_spectrogram_to_numpy(spectrogram):
     global MATPLOTLIB_FLAG
     if not MATPLOTLIB_FLAG:
         import matplotlib
-
-        matplotlib.use("Agg")
+        matplotlib.use('Agg')
         MATPLOTLIB_FLAG = True
-        mpl_logger = logging.getLogger("matplotlib")
-        mpl_logger.setLevel(logging.WARNING)
-    import matplotlib.pylab as plt
-    import numpy as np
+        import matplotlib.pyplot as plt
+    else:
+        import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(10, 2))
     im = ax.imshow(spectrogram, aspect="auto", origin="lower", interpolation="none")
@@ -235,8 +233,10 @@ def plot_spectrogram_to_numpy(spectrogram):
     plt.tight_layout()
 
     fig.canvas.draw()
-    data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep="")
-    data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    data = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8)
+    width, height = fig.canvas.get_width_height()
+    data = data.reshape(height, width, 4)
+    data = data[:,:,:3]
     plt.close()
     return data
 
